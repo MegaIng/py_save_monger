@@ -1,0 +1,8 @@
+[build-system]
+requires = ["setuptools", "nimporter"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "save-monger"
+version = "0.1.0"
+dependencies = ['pydantic']
