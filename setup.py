@@ -1,5 +1,7 @@
+import platform
 import sys
 
+import cpuinfo
 import setuptools
 from nimporter import get_nim_extensions, LINUX, MACOS, WINDOWS, ic, nexporter
 
@@ -70,9 +72,31 @@ def fixed_prevent_win32_max_path_length_error(path) -> None:
             item.replace(target)
 
 
+def fixed_get_host_info() -> Tuple[str, str, str]:
+    """
+    Returns the host platform, architecture, and C compiler used to build the
+    running Python process.
+    """
+    # Calling get_cpu_info() is expensive
+    if not getattr(fixed_get_host_info, 'host_arch', None):
+        fixed_get_host_info.host_arch = cpuinfo.get_cpu_info()['arch'].lower()
+        if "32 bit" in sys.version:
+            if fixed_get_host_info.host_arch == 'x86_64':
+                fixed_get_host_info.host_arch = 'x86_32'
+
+    return ic((
+        platform.system().lower(),
+        fixed_get_host_info.host_arch,
+        nexporter.get_c_compiler_used_to_build_python()
+    ))
+
+
 nexporter.prevent_win32_max_path_length_error = fixed_prevent_win32_max_path_length_error
+nexporter.get_host_info = fixed_get_host_info
 print("-" * 100, sys.argv)
+
 nim_extensions = get_nim_extensions([LINUX, MACOS, WINDOWS])
+print("-"*100, sys.version)
 setuptools.setup(
     ext_modules=nim_extensions
 )
