@@ -384,6 +384,32 @@ class Point(BaseModel, frozen=True):
             return NotImplemented
         return type(self)(x=other.x + self.x, y=other.y + self.y)
 
+    def __sub__(self, other):
+        try:
+            other = type(self).model_validate(other)
+        except ValidationError:
+            return NotImplemented
+        return type(self)(x=self.x - other.x, y=self.y - other.y)
+
+    def __rsub__(self, other):
+        try:
+            other = type(self).model_validate(other)
+        except ValidationError:
+            return NotImplemented
+        return type(self)(x=other.x - self.x, y=other.y - self.y)
+
+    def __mul__(self, other):
+        return type(self)(x=self.x * other, y=self.y * other)
+
+    def __rmul__(self, other):
+        return type(self)(x=other * self.x, y=other * self.y)
+
+    def __truediv__(self, other):
+        return type(self)(x=self.x / other, y=self.y / other)
+
+    def __rtruediv__(self, other):
+        return type(self)(x=other / self.x, y=other / self.y)
+
     def rotate(self, val: int):
         match val % 4:
             case 0:
